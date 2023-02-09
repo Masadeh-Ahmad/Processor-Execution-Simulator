@@ -18,63 +18,59 @@ public class Simulator {
         this.numCycles = numCycles;
         this.taskFilePath = taskFilePath;
         this.tasks = new ArrayList<>();
-        this.processors = new ArrayList<>();
+        this.processors = initializeProcessors();
         this.cycles = new ArrayList<>();
-        initializeProcessors();
         this.scheduler = new Scheduler(processors);
     }
-    // Initialize the processors
-    private void initializeProcessors() {
 
+    // Initialize the processors
+    private List<Processor> initializeProcessors() {
+        List<Processor> processors = new ArrayList<>();
         for (int i = 0; i < numProcessors; i++) {
-            Processor processor = new Processor(i + 1);
-            processors.add(processor);
+            processors.add(new Processor(i + 1));
         }
+        return processors;
     }
     private void readTasksFile() throws IOException {
-        BufferedReader reader = new BufferedReader(new FileReader(taskFilePath));
-        int n = Integer.parseInt(reader.readLine());
-        for(int i = 0; i < n; i++) {
-            String[] line = reader.readLine().split(" ");
-            int creationTime = Integer.parseInt(line[0]);
-            int executionTime = Integer.parseInt(line[1]);
-            int priority = Integer.parseInt(line[2]);
-            Task task = new Task(i+1,creationTime, executionTime, priority);
-            tasks.add(task);
+        try (BufferedReader reader = new BufferedReader(new FileReader(taskFilePath))) {
+            int n = Integer.parseInt(reader.readLine());
+            for (int i = 0; i < n; i++) {
+                String[] line = reader.readLine().split(" ");
+                int creationTime = Integer.parseInt(line[0]);
+                int executionTime = Integer.parseInt(line[1]);
+                int priority = Integer.parseInt(line[2]);
+                Task task = new Task(i + 1, creationTime, executionTime, priority);
+                tasks.add(task);
+            }
         }
-        reader.close();
     }
     public void start() throws IOException {
-        // Read the task file and create the tasks
         readTasksFile();
-        // Start the simulation
-        System.out.println("Starting simulation...");
-        for (int i = 0; i < numCycles; i++){
-            Clock clock = new Clock(i+1,i+1);
+        System.out.println("Starting simulation with " + numProcessors + " Processors, " + numCycles + " Cycles...");
+        for (int i = 0; i < numCycles; i++) {
+            Clock clock = new Clock(i + 1, i + 1);
             cycles.add(clock);
-            System.out.println("Starting cycle "+(clock.getTime())+": ");
-
-            // Check if any task was created in this cycle
+            System.out.println("Starting cycle " + clock.getTime() + ": ");
             checkForNewTasks(clock);
-            // Schedule the tasks to the processors
-            scheduler.ScheduleTasksToProcessors(clock);
-            // Advance the clock by one cycle
-            System.out.println("Ending cycle "+(clock.getTime())+": ");
-           completedTasks(clock);
+            scheduler.completeTasks(clock);
+            System.out.println("Ending cycle " + clock.getTime() + ": ");
+            completeTasks(clock);
             System.out.println("\n");
         }
         System.out.println("Simulation completed.");
     }
-    private void checkForNewTasks(Clock clock){
-        for (Task task : tasks) {
-            if (task.getCreationTime() == clock.getTime()) {
-                System.out.println("Task " + task.getId() + " created");
-                clock.addNewTask(task);
-                scheduler.addTask(task);
-            }
-        }
+
+
+    private void checkForNewTasks(Clock clock) {
+        tasks.stream()
+                .filter(task -> task.getCreationTime() == clock.getTime())
+                .forEach(task -> {
+                    System.out.println("Task " + task.getId() + " created");
+                    clock.addNewTask(task);
+                    scheduler.addTask(task);
+                });
     }
-    private void completedTasks(Clock clock){
+    private void completeTasks(Clock clock){
         for (Processor processor : processors) {
             Task task = processor.getTask();
             if (task != null && task.getExecutionTime() - (clock.getTime()+1 - task.getAssignedCycle()) == 0) {

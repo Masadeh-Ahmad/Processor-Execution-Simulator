@@ -2,22 +2,22 @@ package program;
 import java.util.*;
 
 public class Scheduler {
-    PriorityQueue<Task> taskQueue;
-    List<Processor> processors;
+    private final PriorityQueue<Task> taskQueue = new PriorityQueue<>();
+    private final List<Processor> processors;
 
     public Scheduler(List<Processor> processors) {
-        this.taskQueue = new PriorityQueue<>();
         this.processors = processors;
     }
-    public void addTask(Task task){
-        taskQueue.add(task);
+
+    public void addTask(Task task) {
+        taskQueue.offer(task);
     }
-    // Schedule the tasks to the processors
-    public void ScheduleTasksToProcessors(Clock clock){
+
+    public void completeTasks(Clock clock) {
         for (Processor processor : processors) {
             if (processor.isAvailable() && !taskQueue.isEmpty()) {
                 Task task = taskQueue.poll();
-                processor.setTask(task,clock);
+                processor.setTask(task, clock);
                 System.out.println("Task " + task.getId() + " assigned to Processor " + processor.getId());
             }
         }
