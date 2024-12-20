@@ -2,10 +2,15 @@ package program;
 import java.util.*;
 
 public class Scheduler {
-    private final PriorityQueue<Task> taskQueue = new PriorityQueue<>();
+    private final PriorityQueue<Task> taskQueue;
     private final List<Processor> processors;
 
     public Scheduler(List<Processor> processors) {
+        taskQueue = new PriorityQueue<>();
+        this.processors = processors;
+    }
+    public Scheduler(List<Processor> processors,Comparator<Task> co) {
+        taskQueue = new PriorityQueue<>(co);
         this.processors = processors;
     }
 
@@ -13,7 +18,7 @@ public class Scheduler {
         taskQueue.offer(task);
     }
 
-    public void completeTasks(Clock clock) {
+    public void ScheduleTasksToProcessors(Clock clock) {
         for (Processor processor : processors) {
             if (processor.isAvailable() && !taskQueue.isEmpty()) {
                 Task task = taskQueue.poll();

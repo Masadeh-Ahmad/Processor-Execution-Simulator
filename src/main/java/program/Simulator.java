@@ -52,7 +52,7 @@ public class Simulator {
             cycles.add(clock);
             System.out.println("Starting cycle " + clock.getTime() + ": ");
             checkForNewTasks(clock);
-            scheduler.completeTasks(clock);
+            scheduler.ScheduleTasksToProcessors(clock);
             System.out.println("Ending cycle " + clock.getTime() + ": ");
             completeTasks(clock);
             System.out.println("\n");
